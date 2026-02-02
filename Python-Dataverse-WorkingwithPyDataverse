@@ -1,0 +1,46 @@
+import pyodbc
+import msal
+import requests
+import json
+
+
+
+# Azure AD details
+client_id = '0e1c58b1-3d9a-4618-8889-6c6505288d3c'
+client_secret = 'qlU8Q~dmhKFfdL1ph2YsLK9URbhIPn~qWmfr1ceL'
+tenant_id = '97ae7e35-2f87-418b-9432-6733950f3d5c'
+authority = f'https://login.microsoftonline.com/{tenant_id}'
+resource = 'https://ecellorsdev.crm8.dynamics.com'
+
+# SQL endpoint
+sql_server = 'ecellorsdev.crm8.dynamics.com'
+database = 'ecellorsdev'
+
+# Get token with error handling
+try:
+    print(f"Attempting to authenticate with tenant: {tenant_id}")
+    print(f"Authority URL: {authority}")
+    
+    app = msal.ConfidentialClientApplication(client_id, authority=authority, client_credential=client_secret)
+    
+    print("Acquiring token...")
+    token_response = app.acquire_token_for_client(scopes=[f'{resource}/.default'])
+    
+    if 'error' in token_response:
+        print(f"Token acquisition failed: {token_response['error']}")
+        print(f"Error description: {token_response.get('error_description', 'No description available')}")
+    else:
+        access_token = token_response['access_token']
+        print("Token acquired successfully and your token is!"+access_token)
+        print(f"Token length: {len(access_token)} characters")
+        
+except ValueError as e:
+    print(f"Configuration Error: {e}")
+    print("\nPossible solutions:")
+    print("1. Verify your tenant ID is correct")
+    print("2. Check if the tenant exists and is active")
+    print("3. Ensure you're using the right Azure cloud (commercial, government, etc.)")
+    
+except Exception as e:
+    print(f"Unexpected error: {e}")
+
